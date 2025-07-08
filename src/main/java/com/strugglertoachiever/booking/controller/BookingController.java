@@ -1,5 +1,7 @@
 package com.strugglertoachiever.booking.controller;
 
+import com.strugglertoachiever.booking.model.Booking;
+import com.strugglertoachiever.booking.service.BookingService;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -8,16 +10,19 @@ import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 @RestController
 @RequestMapping("/bookings")
 public class BookingController {
+
+    @Autowired
+    private BookingService bookingService;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -64,5 +69,25 @@ public class BookingController {
 
     public String hotelFallback(Throwable t) {
         return "Hotel service is busy, please try again later.";
+    }
+
+    @PostMapping
+    public ResponseEntity<String> createBooking(@RequestBody Booking booking) {
+        return bookingService.createBooking(booking);
+    }
+
+    @GetMapping
+    public List<Booking> getAllBookings() {
+        return bookingService.getAllBookings();
+    }
+
+    @GetMapping("/{id}")
+    public Booking getBookingById(@PathVariable Long id) {
+        return bookingService.getBookingById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteBooking(@PathVariable Long id) {
+        bookingService.deleteBooking(id);
     }
 }
